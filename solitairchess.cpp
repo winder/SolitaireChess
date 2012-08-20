@@ -174,34 +174,40 @@ bool SolitairChess::solve(const std::string state, std::string* solution)
   SolitairChess x;
   x.initializeGame(state);
 
-  for (unsigned int outer = 0; outer < state.length(); outer+=3)
+  // Iterates through each piece looking for which needs to move
+  for (unsigned int fromPiece = 0; fromPiece < state.length(); fromPiece+=3)
   {
-    for (unsigned int inner = 0; inner < state.length(); inner+=3)
+    // Iterates through each piece looking for where it can move
+    for (unsigned int toPiece = 0; toPiece < state.length(); toPiece+=3)
     {
-      // Valid move, recurse.
-      if ( x.canMovePiece( state[outer]-'0', state[outer + 1]-'0',
-                           state[inner]-'0', state[inner + 1]-'0') )
+      // Check if the from->to combination is a valid move, if so, recurse.
+      if ( x.canMovePiece( state[fromPiece]-'0', state[fromPiece + 1]-'0',
+                           state[toPiece]-'0', state[toPiece + 1]-'0') )
       {
 
+        // If it is a valid move, create a game and move the piece.
         SolitairChess b;
         b.initializeGame(state);
-        b.movePiece( state[outer] - '0', state[outer + 1] - '0',
-                     state[inner] - '0', state[inner + 1] - '0' );
+        b.movePiece( state[fromPiece] - '0', state[fromPiece + 1] - '0',
+                     state[toPiece] - '0', state[toPiece + 1] - '0' );
         std::string afterMove = b.getState();
+
+        // If this happens there is a bug, but trap it so we don't crash.
         if ( afterMove[0] == '\0')
         {
-          printf("you got issues\n");
+          printf("Some sort of bug has occurred.\n");
           return false;
         }
 
+        // Recurse
         if (solve( afterMove, solution ))
         {
           // TODO: find the better way to do C++ formatted string building.
           //       What I really want is an equivelent to sprintf.
-          move  = state[outer    ];
-          move += state[outer + 1];
-          move += state[inner    ];
-          move += state[inner + 1];
+          move  = state[fromPiece    ];
+          move += state[fromPiece + 1];
+          move += state[toPiece    ];
+          move += state[toPiece + 1];
           move += ',';
 
           *solution = move + *solution;
